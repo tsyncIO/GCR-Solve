@@ -246,17 +246,17 @@ import matplotlib.pyplot as plt
 
 try:
 
-&nbsp;   phi\_data = np.loadtxt('data/phi\_solution.txt')
+     phi\_data = np.loadtxt('data/phi\_solution.txt')
 
-&nbsp;   ex\_data = np.loadtxt('data/Ex\_field.txt')
+     ex\_data = np.loadtxt('data/Ex\_field.txt')
 
-&nbsp;   ey\_data = np.loadtxt('data/Ey\_field.txt')
+     ey\_data = np.loadtxt('data/Ey\_field.txt')
 
 except IOError:
 
-&nbsp;   print("Error: Make sure the solver has run and generated files in the 'data/' directory.")
-
-&nbsp;   exit()
+     print("Error: Make sure the solver has run and generated files in the 'data/' directory.")
+ 
+     exit()
 
 
 
@@ -366,35 +366,37 @@ Valgrind will output a detailed report on any memory issues it finds.
 
 Project Structure
 
+~~~
 GCR-Solve/
 
-├── Dockerfile              # Defines the Docker image build process
+- Dockerfile              # Defines the Docker image build process
 
-├── docker-compose.yml      # Orchestrates the Docker container setup
+- docker-compose.yml      # Orchestrates the Docker container setup
 
-├── .gitignore              # Specifies files/directories to ignore in Git
+- .gitignore              # Specifies files/directories to ignore in Git
 
-├── README.md               # This file
+- README.md               # This file
 
-├── src/                    # Contains all C source code files
+- src/                    # Contains all C source code files
 
-│   ├── main.c              # Main program logic, setup, and solver call
+- - main.c              # Main program logic, setup, and solver call
 
-│   ├── poisson.c           # Implementation of Poisson-related functions (apply\_A, create\_b)
+- - poisson.c           # Implementation of Poisson-related functions (apply\_A, create\_b)
 
-│   ├── poisson.h           # Header for poisson.c
+- - poisson.h           # Header for poisson.c
 
-│   ├── gcr\_solver.c        # Implementation of GCR algorithm and vector operations
+- - gcr\_solver.c        # Implementation of GCR algorithm and vector operations
 
-│   ├── gcr\_solver.h        # Header for gcr\_solver.c
+- - gcr\_solver.h        # Header for gcr\_solver.c
 
-│   ├── utils.c             # Implementation of utility functions (memory, file I/O, timing)
+- - utils.c             # Implementation of utility functions (memory, file I/O, timing)
 
-│   └── utils.h             # Header for utils.c
+- - utils.h             # Header for utils.c
 
-└── data/                   # Directory for output files (mounted from host)
+- data/                   # Directory for output files (mounted from host)
 
-&nbsp;   └── (output files like phi\_solution.txt, Ex\_field.txt, Ey\_field.txt)
+- - - (output files like phi\_solution.txt, Ex\_field.txt, Ey\_field.txt)
+~~~
 
 
 
