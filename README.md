@@ -367,35 +367,22 @@ Valgrind will output a detailed report on any memory issues it finds.
 Project Structure
 
 ~~~
-GCR-Solve/
-
-- Dockerfile              # Defines the Docker image build process
-
-- docker-compose.yml      # Orchestrates the Docker container setup
-
-- .gitignore              # Specifies files/directories to ignore in Git
-
-- README.md               # This file
-
-- src/                    # Contains all C source code files
-
-- - main.c              # Main program logic, setup, and solver call
-
-- - poisson.c           # Implementation of Poisson-related functions (apply\_A, create\_b)
-
-- - poisson.h           # Header for poisson.c
-
-- - gcr\_solver.c        # Implementation of GCR algorithm and vector operations
-
-- - gcr\_solver.h        # Header for gcr\_solver.c
-
-- - utils.c             # Implementation of utility functions (memory, file I/O, timing)
-
-- - utils.h             # Header for utils.c
-
-- data/                   # Directory for output files (mounted from host)
-
-- - - (output files like phi\_solution.txt, Ex\_field.txt, Ey\_field.txt)
+GCR-Solve
+|--.gitignore
+|--docker-compose.yml
+|--Dockerfile
+|--LICENSE
+|--README.md
+|-- data
+|--src
+|  |--electrostatics_solver
+|  |--gcr_solver.c
+|  |--gcr_solver.h
+|  |--main.c
+|  |--poisson.c
+|  |--poisson.h
+|  |--utils.c
+|  |--utils.h
 ~~~
 
 
