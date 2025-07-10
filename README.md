@@ -84,10 +84,6 @@ cd GCR-Solve
 
 
 
-
-
-
-
 (Remember to replace YOUR\_USERNAME with your actual GitHub username)
 
 
@@ -102,10 +98,6 @@ docker-compose build
 
 
 
-
-
-
-
 Start the Development Container:
 
 This command launches a new container instance and drops you into a bash shell inside it. Your local src/ and data/ directories will be mounted into the container.
@@ -113,10 +105,6 @@ This command launches a new container instance and drops you into a bash shell i
 
 
 docker-compose run --rm gcr-solve-dev
-
-
-
-
 
 
 
@@ -138,10 +126,6 @@ cd src
 
 
 
-
-
-
-
 Compile the C Code:
 
 This command compiles all source files (.c) and links them, creating the executable electrostatics\_solver. The -O3 flag enables high optimization, and -fopenmp enables OpenMP parallelism.
@@ -149,10 +133,6 @@ This command compiles all source files (.c) and links them, creating the executa
 
 
 gcc -Wall -Wextra -O3 -fopenmp main.c poisson.c gcr\_solver.c utils.c -o electrostatics\_solver -lm
-
-
-
-
 
 
 
@@ -170,10 +150,6 @@ Basic Usage:
 
 
 
-
-
-
-
 Examples:
 
 
@@ -183,10 +159,6 @@ Run with default settings (102x102 grid, default OpenMP threads, max 10000 itera
 
 
 ./electrostatics\_solver
-
-
-
-
 
 
 
@@ -200,10 +172,6 @@ export OMP\_NUM\_THREADS=4 # Set OpenMP threads via environment variable
 
 
 
-
-
-
-
 Run with a 502x502 grid, 8 OpenMP threads, max 5000 iterations:
 
 
@@ -214,10 +182,6 @@ export OMP\_NUM\_THREADS=8
 
 
 
-
-
-
-
 Run sequentially (1 thread) for a 502x502 grid, max 10000 iterations:
 
 
@@ -225,10 +189,6 @@ Run sequentially (1 thread) for a 502x502 grid, max 10000 iterations:
 export OMP\_NUM\_THREADS=1
 
 ./electrostatics\_solver 502 502
-
-
-
-
 
 
 
@@ -272,17 +232,17 @@ import matplotlib.pyplot as plt
 
 try:
 
-    phi\_data = np.loadtxt('data/phi\_solution.txt')
+&nbsp;   phi\_data = np.loadtxt('data/phi\_solution.txt')
 
-    ex\_data = np.loadtxt('data/Ex\_field.txt')
+&nbsp;   ex\_data = np.loadtxt('data/Ex\_field.txt')
 
-    ey\_data = np.loadtxt('data/Ey\_field.txt')
+&nbsp;   ey\_data = np.loadtxt('data/Ey\_field.txt')
 
 except IOError:
 
-    print("Error: Make sure the solver has run and generated files in the 'data/' directory.")
+&nbsp;   print("Error: Make sure the solver has run and generated files in the 'data/' directory.")
 
-    exit()
+&nbsp;   exit()
 
 
 
@@ -412,7 +372,7 @@ GCR-Solve/
 
 └── data/                   # Directory for output files (mounted from host)
 
-    └── (output files like phi\_solution.txt, Ex\_field.txt, Ey\_field.txt)
+&nbsp;   └── (output files like phi\_solution.txt, Ex\_field.txt, Ey\_field.txt)
 
 
 
