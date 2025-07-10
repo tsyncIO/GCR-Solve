@@ -1,0 +1,33 @@
+version: '3.8' # Specify the Docker Compose file format version
+
+services:
+  # Define a service named 'gcr-solve-dev' for your development environment
+  gcr-solve-dev:
+    # Build the Docker image using the Dockerfile located in the current directory ('.')
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Define volume mounts to synchronize files between your host and the container
+    volumes:
+      # Mount your local 'src' directory (where your C code resides) to '/app/src' inside the container.
+      # This allows you to edit code on your host machine, and changes are instantly reflected in the container.
+      - ./src:/app/src
+      # Mount your local 'data' directory to '/app/data' inside the container.
+      # Your C program will write output files here, making them accessible on your host machine.
+      - ./data:/app/data
+    # Set the default working directory inside the container when you shell into it.
+    # This simplifies navigation once you're inside the container.
+    working_dir: /app
+    # Override the default command defined in the Dockerfile.
+    # This ensures that when you run 'docker-compose run gcr-solve-dev', you get an interactive bash shell.
+    command: bash
+    # Optional: Share the host's PID namespace with the container.
+    # This can be useful for performance monitoring tools (like Valgrind's callgrind)
+    # that need to see processes on the host, but is not strictly necessary for basic operation.
+    # pid: host
+    # Optional: Configuration for X11 forwarding if you ever needed to run graphical applications
+    # from within the container and display them on your host. Not needed for this project.
+    # environment:
+    #   - DISPLAY=${DISPLAY}
+    # volumes:
+    #   - /tmp/.X11-unix:/tmp/.X11-unix

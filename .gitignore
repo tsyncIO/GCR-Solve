@@ -1,0 +1,44 @@
+    # Compiled C executable
+    /src/electrostatics_solver
+
+    # Object files (intermediate compilation files)
+    /src/*.o
+
+    # Output data files
+    /data/
+
+    # Docker-related ignore rules
+    # Ignore any local .env files if you add them later for Docker Compose
+    .env
+
+    # Docker Compose specific files that might be generated
+    docker-compose.*.override.yml
+
+    # macOS-specific files
+    .DS_Store
+
+    # Windows-specific files
+    Thumbs.db
+    *.suo
+    *.user
+    *.aps
+    *.vspscc
+    *.vssscc
+    *.bak
+    *.ilk
+    *.log
+    *.obj
+    *.pdb
+    *.res
+    *.sbr
+    *.bsc
+    *.vcproj.*.filters
+    *.vcxproj.filters
+    *.code-workspace
+
+    # Any other temporary or build-related files
+    *.tmp
+    *.log
+    *.swp
+    *~
+    
