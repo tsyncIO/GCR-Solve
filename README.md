@@ -50,41 +50,19 @@ Before you begin, ensure you have the following installed on your system:
 
 
 
-Git: For cloning the repository.
-
-
-
-Download Git
-
-
-
-Docker Desktop: Includes Docker Engine and Docker Compose.
-
-
-
-Download Docker Desktop (for Windows, macOS, Linux)
-
-
-
-Getting Started
-
-Follow these steps to set up and run the GCR-Solve project.
-
-
-
 Clone the Repository:
 
 Open your terminal (PowerShell on Windows, or Bash on Linux/macOS) and clone the project:
 
 
 
-git clone https://github.com/YOUR\_USERNAME/GCR-Solve.git
+~~~
+
+git clone https://github.com/tsyncIO/GCR-Solve.git
 
 cd GCR-Solve
 
-
-
-(Remember to replace YOUR\_USERNAME with your actual GitHub username)
+~~~
 
 
 
@@ -94,7 +72,11 @@ This command will build the Docker image based on the Dockerfile. This might tak
 
 
 
+~~~
+
 docker-compose build
+
+~~~
 
 
 
@@ -104,7 +86,11 @@ This command launches a new container instance and drops you into a bash shell i
 
 
 
+~~~
+
 docker-compose run --rm gcr-solve-dev
+
+~~~
 
 
 
@@ -122,7 +108,11 @@ Navigate to the Source Directory:
 
 
 
+~~~
+
 cd src
+
+~~~
 
 
 
@@ -132,7 +122,11 @@ This command compiles all source files (.c) and links them, creating the executa
 
 
 
+~~~
+
 gcc -Wall -Wextra -O3 -fopenmp main.c poisson.c gcr\_solver.c utils.c -o electrostatics\_solver -lm
+
+~~~
 
 
 
@@ -144,9 +138,11 @@ The executable takes optional command-line arguments for grid dimensions (Nx, Ny
 
 Basic Usage:
 
-
+~~~
 
 ./electrostatics\_solver \[Nx] \[Ny] \[num\_threads] \[max\_iterations]
+
+~~~
 
 
 
@@ -156,11 +152,11 @@ Examples:
 
 Run with default settings (102x102 grid, default OpenMP threads, max 10000 iterations):
 
-
+~~~
 
 ./electrostatics\_solver
 
-
+~~~
 
 Run with a 102x102 grid, 4 OpenMP threads, max 10000 iterations:
 
@@ -168,7 +164,11 @@ Run with a 102x102 grid, 4 OpenMP threads, max 10000 iterations:
 
 export OMP\_NUM\_THREADS=4 # Set OpenMP threads via environment variable
 
+~~~
+
 ./electrostatics\_solver 102 102
+
+~~~
 
 
 
@@ -178,7 +178,11 @@ Run with a 502x502 grid, 8 OpenMP threads, max 5000 iterations:
 
 export OMP\_NUM\_THREADS=8
 
+~~~
+
 ./electrostatics\_solver 502 502 8 5000
+
+~~~
 
 
 
@@ -188,7 +192,11 @@ Run sequentially (1 thread) for a 502x502 grid, max 10000 iterations:
 
 export OMP\_NUM\_THREADS=1
 
+~~~
+
 ./electrostatics\_solver 502 502
+
+~~~
 
 
 
@@ -222,13 +230,19 @@ Example Python Plotting Script (on your host machine, after running the solver):
 
 
 
+~~~
+
 import numpy as np
 
 import matplotlib.pyplot as plt
 
+~~~
+
 
 
 \# Load data from the 'data' directory
+
+~~~
 
 try:
 
@@ -296,6 +310,10 @@ plt.show()
 
 
 
+~~~
+
+
+
 Parallelization and Performance Analysis
 
 The project is designed to demonstrate OpenMP's efficiency. You can perform strong scaling analysis by:
@@ -330,7 +348,11 @@ The Docker image includes Valgrind, a powerful tool for detecting memory errors 
 
 \# Inside the container, in the src directory
 
+~~~
+
 valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./electrostatics\_solver 102 102 4 100
+
+~~~
 
 
 
