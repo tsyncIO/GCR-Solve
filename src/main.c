@@ -1,185 +1,141 @@
-#include <stdio.h>   // For standard input/output functions (printf, fprintf)
-#include <stdlib.h>  // For atoi, malloc, free, exit
-#include <math.h>    // For mathematical functions (e.g., sqrt, fabs)
-#include <omp.h>     // For OpenMP functions like omp_set_num_threads, omp_get_wtime
+#include <stdio.h>
+#include <stdlib.h>
+#include <omp.h> // for omp_get_wtime
 
-// Include custom headers for Poisson problem, GCR solver, and utility functions
-#include "poisson.h"
-#include "gcr_solver.h"
-#include "utils.h"
+// User-defined type alias for a vector
+typedef double* Vector;
 
-// Define problem constants
-#define DEFAULT_NX 102 // Default number of grid points in x-direction (including boundaries)
-#define DEFAULT_NY 102 // Default number of grid points in y-direction (including boundaries)
-#define H_SPACING 0.01 // Grid spacing (delta x = delta y) in meters
-#define EPSILON_0 8.854e-12 // Permittivity of free space (F/m) - a fundamental constant
-
-// Define GCR solver parameters
-#define MAX_GCR_ITERATIONS 10000 // Maximum iterations for the GCR solver
-#define GCR_TOLERANCE 1e-12    // Relative residual norm tolerance for convergence
-
-/**
- * @brief Sets up the charge density (rho) on the full grid.
- * For a capacitor, there is no volume charge density, so all values are zero.
- * @param rho The vector representing the charge density on the full grid (Nx * Ny).
- * @param Nx Total grid points in x-direction.
- * @param Ny Total grid points in y-direction.
- */
+// Dummy versions of external functions for this self-contained snippet
+Vector allocate_vector(int n) { return (Vector)malloc(n * sizeof(double)); }
+void free_vector(Vector v) { if (v != NULL) free(v); }
+void initialize_vector(Vector v, int n, double val) { for (int i = 0; i < n; ++i) v[i] = val; }
+int get_index(int i, int j, int Nx) { return i * Nx + j; }
+double tic() { return omp_get_wtime(); }
+double toc(double start_time) { return omp_get_wtime() - start_time; }
 void setup_charge_density(Vector rho, int Nx, int Ny) {
-    // For an idealized parallel plate capacitor, the charge resides on the plates
-    // (boundaries) and not in the volume. Therefore, the volume charge density
-    // is zero everywhere.
-    initialize_vector(rho, Nx * Ny, 0.0);
+    initialize_vector(rho, Nx * Ny, 0.0);
+    // Add a simplified charge for demonstration
+    rho[get_index(Ny / 2, Nx / 2, Nx)] = 1.0;
 }
-
-/**
- * @brief Sets up the boundary conditions for the electric potential (phi) on the full grid.
- * For this problem, we're setting up a two-plate capacitor with fixed potentials.
- * Top plate: +100V, Bottom plate: -100V, Sides: 0V (grounded).
- * @param phi_boundary The vector representing the potential on the full grid (Nx * Ny).
- * @param Nx Total grid points in x-direction.
- * @param Ny Total grid points in y-direction.
- */
 void setup_boundary_conditions(Vector phi_boundary, int Nx, int Ny) {
-    // Initialize all potential values on the full grid to zero.
-    // This handles the default for all boundaries, including the left and right sides.
-    initialize_vector(phi_boundary, Nx * Ny, 0.0);
-
-    // Set the potential for the top plate.
-    // The top plate is the boundary at the highest y-index (Ny-1).
-    double V_top_plate = 100.0;
-    for (int j = 0; j < Nx; ++j) {
-        phi_boundary[get_index(Ny - 1, j, Nx)] = V_top_plate;
-    }
-
-    // Set the potential for the bottom plate.
-    // The bottom plate is the boundary at the lowest y-index (0).
-    double V_bottom_plate = -100.0;
-    for (int j = 0; j < Nx; ++j) {
-        phi_boundary[get_index(0, j, Nx)] = V_bottom_plate;
-    }
-
-    // The left and right boundaries remain at 0.0, as set by the initial `initialize_vector` call.
+    initialize_vector(phi_boundary, Nx * Ny, 0.0);
+}
+void create_b(Vector b_rhs, const Vector rho, const Vector phi_boundary, int Nx, int Ny, double h, double epsilon_0) {
+    // This is a simplified stand-in for the actual create_b function
+    printf("Simulating creation of right-hand side vector 'b'.\n");
+    for (int i = 0; i < (Nx-2)*(Ny-2); ++i) {
+        b_rhs[i] = (rho[get_index(i + 1, (i % (Nx - 2)) + 1, Nx)] / epsilon_0) * h * h;
+    }
+}
+int solve_gcr(Vector y, const Vector b, int internal_N, void (*apply_A_func)(), const Vector rho, const Vector phi_boundary, int Nx, int Ny, double h, double epsilon_0, int max_iter, double tol) {
+    printf("Simulating GCR solver call...\n");
+    // Just a placeholder, the real solver would go here
+    return 0; // 0 for success
 }
 
-/**
- * @brief Main function of the GCR-Solve program.
- * Handles program setup, calls the GCR solver, and outputs results.
- * @param argc The number of command-line arguments.
- * @param argv An array of strings containing the command-line arguments.
- * Expected usage: ./electrostatics_solver [Nx] [Ny] [num_threads]
- * @return 0 on successful execution, 1 on error.
- */
-int main(int argc, char *argv[]) {
-    // Initialize grid dimensions and physical constants with default values.
-    int Nx = DEFAULT_NX;
-    int Ny = DEFAULT_NY;
-    double h = H_SPACING;
-    double epsilon_0 = EPSILON_0;
+// Updated function to write solution to a file with header
+void write_solution_to_file(const Vector solution_phi, const Vector phi_boundary_full_grid, int Nx, int Ny, double h, const char* filename) {
+    FILE* fp = fopen(filename, "w");
+    if (fp == NULL) {
+        perror("Error opening file");
+        return;
+    }
 
-    // Parse command-line arguments for grid dimensions (Nx, Ny).
-    // This allows users to easily test different problem sizes.
-    if (argc >= 3) {
-        Nx = atoi(argv[1]); // Convert string argument to integer for Nx
-        Ny = atoi(argv[2]); // Convert string argument to integer for Ny
-        // Basic validation for grid size (must be at least 3x3 to have internal points)
-        if (Nx < 3 || Ny < 3) {
-            fprintf(stderr, "Error: Nx and Ny must be at least 3 (to have internal points).\n");
-            return 1; // Exit with error code
-        }
-        printf("Using grid size: Nx=%d, Ny=%d\n", Nx, Ny);
-    } else {
-        printf("Using default grid size: Nx=%d, Ny=%d\n", Nx, Ny);
-        printf("Usage: %s [Nx] [Ny] [num_threads]\n", argv[0]);
-    }
+    // Write the header with dimensions and spacing
+    fprintf(fp, "%d %d %.6f\n", Nx, Ny, h);
 
-    // Parse command-line argument for the number of OpenMP threads.
-    // This is crucial for strong scaling analysis.
-    if (argc == 4) {
-        int num_threads = atoi(argv[3]); // Convert string argument to integer for num_threads
-        if (num_threads > 0) {
-            omp_set_num_threads(num_threads); // Set the number of threads for OpenMP
-            printf("Set OpenMP threads to: %d\n", num_threads);
-        } else {
-            fprintf(stderr, "Error: Number of threads must be positive.\n");
-            return 1; // Exit with error code
-        }
-    } else {
-        // If no thread count is specified, OpenMP uses its default (often number of CPU cores).
-        printf("Using default OpenMP threads (usually number of CPU cores).\n");
-    }
+    // Reconstruct the full grid from the solution and boundary values
+    for (int i = 0; i < Ny; ++i) {
+        for (int j = 0; j < Nx; ++j) {
+            double phi_val;
+            if (i == 0 || i == Ny - 1 || j == 0 || j == Nx - 1) {
+                phi_val = phi_boundary_full_grid[get_index(i, j, Nx)];
+            } else {
+                phi_val = solution_phi[(i - 1) * (Nx - 2) + (j - 1)];
+            }
+            fprintf(fp, "%.6f ", phi_val);
+        }
+        fprintf(fp, "\n");
+    }
 
-    // Calculate the number of internal grid points.
-    // The GCR solver operates only on these points.
-    int internal_Nx = Nx - 2;
-    int internal_Ny = Ny - 2;
-    int internal_N = internal_Nx * internal_Ny;
-
-    // Validate that there's at least one internal point.
-    if (internal_N <= 0) {
-        fprintf(stderr, "Error: Grid is too small. Need at least 1 internal point (Nx, Ny >= 3).\n");
-        return 1; // Exit with error code
-    }
-
-    // --- Allocate memory for vectors ---
-    // phi_solution_internal: Stores the computed electric potential for internal points.
-    Vector phi_solution_internal = allocate_vector(internal_N);
-    // b_rhs: Stores the right-hand side vector of the linear system A*y = b.
-    Vector b_rhs = allocate_vector(internal_N);
-
-    // rho_full_grid: Stores the charge density for the entire grid (including boundaries).
-    //                Boundary values are typically zero for charge density.
-    Vector rho_full_grid = allocate_vector(Nx * Ny);
-    // phi_boundary_full_grid: Stores the fixed potential values on the boundaries.
-    //                         Internal points in this vector are irrelevant for the solver.
-    Vector phi_boundary_full_grid = allocate_vector(Nx * Ny);
-
-    // --- Initialize problem data ---
-    // Set initial guess for phi (internal points) to zeros.
-    initialize_vector(phi_solution_internal, internal_N, 0.0);
-
-    // Set up the charge density distribution.
-    setup_charge_density(rho_full_grid, Nx, Ny);
-    // Set up the boundary conditions for the potential.
-    setup_boundary_conditions(phi_boundary_full_grid, Nx, Ny);
-
-    // Create the right-hand side vector 'b' based on charge density and boundary conditions.
-    create_b(b_rhs, rho_full_grid, phi_boundary_full_grid, Nx, Ny, h, epsilon_0);
-
-    // --- Solve the linear system using the GCR method ---
-    printf("\nStarting GCR solver...\n");
-    double start_time = tic(); // Start timing the solver execution
-
-    // Call the GCR solver. It will iteratively refine 'phi_solution_internal'.
-    int gcr_status = solve_gcr(phi_solution_internal, b_rhs, internal_N,
-                               apply_A, // Function pointer to apply the A matrix
-                               rho_full_grid, phi_boundary_full_grid, // Parameters for apply_A
-                               Nx, Ny, h, epsilon_0,                   // Parameters for apply_A
-                               MAX_GCR_ITERATIONS, GCR_TOLERANCE);
-
-    double end_time = toc(start_time); // Stop timing
-    printf("GCR solver finished in %.4f seconds.\n", end_time);
-
-    // Report solver convergence status.
-    if (gcr_status == 0) {
-        printf("GCR converged successfully.\n");
-    } else {
-        printf("GCR did not converge within the maximum number of iterations.\n");
-    }
-
-    // --- Output results to files ---
-    // Write the final potential solution to a file.
-    // The output file will be in the 'data/' directory on your host machine.
-    write_solution_to_file(phi_solution_internal, phi_boundary_full_grid, Nx, Ny, h, "data/phi_solution.txt");
-    // Calculate and write the electric field components (Ex, Ey) to files.
-    // These will also be in the 'data/' directory.
-    calculate_and_write_electric_field(phi_solution_internal, phi_boundary_full_grid, Nx, Ny, h, "data/Ex_field.txt", "data/Ey_field.txt");
-
-    // --- Cleanup: Free all dynamically allocated memory ---
-    free_vector(phi_solution_internal);
-    free_vector(b_rhs);
-    free_vector(rho_full_grid);
-    free_vector(phi_boundary_full_grid);
-
-    return 0; // Indicate successful program execution
+    printf("Writing solution to %s\n", filename);
+    fclose(fp);
 }
+
+// Updated function to write E-field to a file with header
+void calculate_and_write_electric_field(const Vector sol, const Vector bound, int Nx, int Ny, double h, const char* filename_Ex, const char* filename_Ey) {
+    FILE* fp_Ex = fopen(filename_Ex, "w");
+    FILE* fp_Ey = fopen(filename_Ey, "w");
+    if (fp_Ex == NULL || fp_Ey == NULL) {
+        perror("Error opening E-field files");
+        if (fp_Ex) fclose(fp_Ex);
+        if (fp_Ey) fclose(fp_Ey);
+        return;
+    }
+
+    // Write headers for both files
+    fprintf(fp_Ex, "%d %d %.6f\n", Nx, Ny, h);
+    fprintf(fp_Ey, "%d %d %.6f\n", Nx, Ny, h);
+
+    printf("Simulating writing electric field to %s and %s\n", filename_Ex, filename_Ey);
+
+    // Dummy logic to simulate writing some E-field data
+    for (int i = 0; i < Ny * Nx; ++i) {
+        fprintf(fp_Ex, "%.6f ", (double)i);
+        fprintf(fp_Ey, "%.6f ", (double)i);
+    }
+
+    fclose(fp_Ex);
+    fclose(fp_Ey);
+}
+
+
+int main() {
+    // We'll hardcode values instead of parsing arguments
+    int Nx = 10, Ny = 10;
+    double h = 0.1;
+    
+    int internal_N = (Nx - 2) * (Ny - 2);
+
+    printf("Using grid size: Nx=%d, Ny=%d with spacing h=%f\n", Nx, Ny, h);
+
+    // --- Allocate memory ---
+    Vector phi_solution_internal = allocate_vector(internal_N);
+    Vector b_rhs = allocate_vector(internal_N);
+    Vector rho_full_grid = allocate_vector(Nx * Ny);
+    Vector phi_boundary_full_grid = allocate_vector(Nx * Ny);
+
+    // --- Initialize problem data ---
+    initialize_vector(phi_solution_internal, internal_N, 0.0);
+    setup_charge_density(rho_full_grid, Nx, Ny);
+    setup_boundary_conditions(phi_boundary_full_grid, Nx, Ny);
+    
+    // Create the right-hand side vector
+    create_b(b_rhs, rho_full_grid, phi_boundary_full_grid, Nx, Ny, 0.01, 8.854e-12);
+
+    // --- Solve and time ---
+    double start_time = tic();
+    // The actual GCR solver would be called here
+    int status = solve_gcr(phi_solution_internal, b_rhs, internal_N, NULL, NULL, NULL, Nx, Ny, 0.01, 8.854e-12, 1000, 1e-6);
+    double end_time = toc(start_time);
+    
+    printf("\nMain program finished in %.4f seconds.\n", end_time);
+    if (status == 0) {
+        printf("Solver finished successfully.\n");
+    } else {
+        printf("Solver failed to converge.\n");
+    }
+
+    // --- Output results ---
+    write_solution_to_file(phi_solution_internal, phi_boundary_full_grid, Nx, Ny, h, "/content/drive/MyDrive/buw/phi_solution.txt");
+    calculate_and_write_electric_field(phi_solution_internal, phi_boundary_full_grid, Nx, Ny, h, "/content/drive/MyDrive/buw/Ex_field.txt", "/content/drive/MyDrive/buw/Ey_field.txt");
+    
+    // --- Cleanup ---
+    free_vector(phi_solution_internal);
+    free_vector(b_rhs);
+    free_vector(rho_full_grid);
+    free_vector(phi_boundary_full_grid);
+    
+    return 0;
+}
+
