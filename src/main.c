@@ -478,7 +478,7 @@ void calculate_and_write_electric_field(const Vector sol, const Vector bound, in
  * @param h Grid spacing.
  */
 void write_params_to_file(int Nx, int Ny, double h) {
-    const char* filename = "params.txt";
+    const char* filename = "./data/params.txt";
     FILE* fp = fopen(filename, "w");
     if (fp == NULL) {
         perror("Error opening parameter file");
@@ -580,8 +580,8 @@ int main(int argc, char *argv[]) {
     }
 
     // --- Output results to files ---
-    write_solution_to_file(phi_solution_internal, phi_boundary_full_grid, Nx, Ny, h, "/content/drive/MyDrive/buw/phi_solution.txt");
-    calculate_and_write_electric_field(phi_solution_internal, phi_boundary_full_grid, Nx, Ny, h, "/content/drive/MyDrive/buw/Ex_field.txt", "/content/drive/MyDrive/buw/Ey_field.txt");
+    write_solution_to_file(phi_solution_internal, phi_boundary_full_grid, Nx, Ny, h, "./data/phi_solution.txt");
+    calculate_and_write_electric_field(phi_solution_internal, phi_boundary_full_grid, Nx, Ny, h, "./data/Ex_field.txt", "./data/Ey_field.txt");
 
     // --- Cleanup: Free all dynamically allocated memory ---
     free_vector(phi_solution_internal);
