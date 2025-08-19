@@ -11,8 +11,8 @@
 #define DEFAULT_VOLTAGE 10.0 // Default voltage for capacitor plates in Volts
 
 // Define GCR solver parameters
-#define MAX_GCR_ITERATIONS 10000 // Maximum iterations for the GCR solver
-#define GCR_TOLERANCE 1e-12      // Relative residual norm tolerance for convergence
+#define MAX_GCR_ITERATIONS 8000 // Maximum iterations for the GCR solver
+#define GCR_TOLERANCE 1e-8      // Relative residual norm tolerance for convergence
 
 // User-defined type alias for a vector
 typedef double* Vector;
