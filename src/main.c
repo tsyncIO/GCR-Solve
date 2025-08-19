@@ -471,6 +471,28 @@ void calculate_and_write_electric_field(const Vector sol, const Vector bound, in
     fclose(fp_Ey);
 }
 
+/**
+ * @brief Writes problem parameters (Nx, Ny, h) to a text file in the current working directory.
+ * @param Nx Number of grid points in x-direction.
+ * @param Ny Number of grid points in y-direction.
+ * @param h Grid spacing.
+ */
+void write_params_to_file(int Nx, int Ny, double h) {
+    const char* filename = "params.txt";
+    FILE* fp = fopen(filename, "w");
+    if (fp == NULL) {
+        perror("Error opening parameter file");
+        return;
+    }
+    
+    fprintf(fp, "Nx: %d\n", Nx);
+    fprintf(fp, "Ny: %d\n", Ny);
+    fprintf(fp, "h: %.6f\n", h);
+    
+    fclose(fp);
+    printf("Wrote simulation parameters to %s\n", filename);
+}
+
 // --- Main Program Execution ---
 
 int main(int argc, char *argv[]) {
@@ -520,6 +542,9 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Error: Grid is too small. Need at least 1 internal point (Nx, Ny >= 3).\n");
         return 1;
     }
+
+    // --- Write parameters to a file in the current working directory ---
+    write_params_to_file(Nx, Ny, h);
 
     // --- Allocate memory for vectors ---
     Vector phi_solution_internal = allocate_vector(internal_N);
