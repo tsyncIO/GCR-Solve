@@ -387,7 +387,5 @@ GCR-Solve
 
 
 
-License
 
-(Optional: Add a license section here, e.g., MIT License. You can choose one from choosealicense.com.)
 
