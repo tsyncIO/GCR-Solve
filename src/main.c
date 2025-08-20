@@ -2,6 +2,7 @@
 #include <stdlib.h>   // For atoi, malloc, free, exit
 #include <math.h>     // For mathematical functions (e.g., sqrt)
 #include <omp.h>      // For OpenMP functions like omp_set_num_threads, omp_get_wtime
+#include <sys/stat.h> // For mkdir() to create directories
 
 // Define problem constants
 #define DEFAULT_NX 102       // Default number of grid points in x-direction (including boundaries)
